@@ -1,3 +1,9 @@
+from collections import defaultdict
+from copy import copy
+
+from pyscrabble.game_engine.tile import Tile
+
+
 class Word:
     def __init__(self, game, word, location, direction):
         self.game = game
@@ -35,11 +41,11 @@ class Word:
         squares.append(square)
 
         for _ in range(self.get_length() - 1):
-            if self.direction =='r':
+            if self.direction == 'r':
                 coord = (coord[0], coord[1] + 1)
                 square = self.board.get_square(coord)
                 squares.append(square)
-            elif self.direction =='d':
+            elif self.direction == 'd':
                 coord = (coord[0] + 1, coord[1])
                 square = self.board.get_square(coord)
                 squares.append(square)
@@ -56,22 +62,27 @@ class Word:
             [(Square,Tile),(Square,Tile)]
         """
         word_placement = []
-        
+        rack_letter_map = defaultdict(list)
+        for tile in self.current_player.rack.get_rack_arr():
+            rack_letter_map[tile.get_letter()].append(tile)
+
         for i, square in enumerate(self.squares):
             if square.get_tile():
-                word_placement.append((square,square.get_tile()))
+                word_placement.append((square, square.get_tile()))
             else:
-                if self.word[i] not in self.current_player.rack.get_rack_str():
-                    for tile in self.current_player.rack.get_rack_arr():
-                        if tile.get_is_blank():
-                            tile.set_blank_letter(self.word[i])
-                            word_placement.append((square,tile))
-                            break
+                current_required_letter = self.word[i]
+                if current_required_letter not in rack_letter_map:
+                    if Tile.BLANK_SYMBOL in rack_letter_map:
+                        tile = copy(rack_letter_map[Tile.BLANK_SYMBOL].pop())
+                        tile.set_blank_letter(self.word[i])
+                        word_placement.append((square, tile))
+                        if not rack_letter_map[Tile.BLANK_SYMBOL]:
+                            del rack_letter_map[Tile.BLANK_SYMBOL]
                 else:
-                    for tile in self.current_player.rack.get_rack_arr():
-                        if self.word[i] == tile.get_letter():
-                            word_placement.append((square,tile))
-                            break
+                    tile = rack_letter_map[current_required_letter].pop()
+                    if not rack_letter_map[current_required_letter]:
+                        del rack_letter_map[current_required_letter]
+                    word_placement.append((square, tile))
         return word_placement
 
     def set_required_letters(self):
@@ -88,49 +99,47 @@ class Word:
         return self.required_letters
 
     def get_secondary_word_placements(self):
-        def word_placement(board, square, primary_word_placement, direction):
+        def word_placement(board, starting_square, primary_cross_square, primary_cross_tile, direction):
+            square = starting_square
+            word_arr = []
+            while not square.is_empty() or square is primary_cross_square:
+                if not square.is_empty():
+                    tile = square.get_tile()
+                else:
+                    tile = primary_cross_tile
 
-            if not square.is_empty():
-                tile = square.get_tile()
-            else:
-                tile = [tile for square_, tile in primary_word_placement if square_ == square][0]
+                word_arr.append((square, tile))
 
-            if direction == 'r':
-                new_square = board.get_adjacent_square(square).down
-            elif direction == 'd':
-                new_square = board.get_adjacent_square(square).right
+                if direction == 'r':
+                    square = board.get_adjacent_square(square, "below")
+                elif direction == 'd':
+                    square = board.get_adjacent_square(square, "right")
 
-            if not new_square.is_empty() or any(new_square == square for square, tile in primary_word_placement):
-                word_arr = word_placement(board, new_square, primary_word_placement, direction)
-            else:
-                word_arr = []
-
-            word_arr.insert(0, (square, tile))
             return word_arr
 
         all_secondary_word_placements = []
 
-        for square, _ in self.word_placement:
+        for square, tile in self.word_placement:
             if self.direction == 'r':
                 #  check up and down tiles
                 #  get position of most vertical conjoining square for each square in placed word
                 starting_square = square
-                while not self.board.get_adjacent_square(starting_square).up.is_empty():
-                    starting_square = self.board.get_adjacent_square(starting_square).up
-                secondary_word_placement = word_placement(self.board, starting_square, self.word_placement, self.direction)
+                while not self.board.get_adjacent_square(starting_square, "above").is_empty():
+                    starting_square = self.board.get_adjacent_square(starting_square, "above")
+                secondary_word_placement = word_placement(self.board, starting_square, square, tile, self.direction)
                 all_secondary_word_placements.append(secondary_word_placement)
             elif self.direction =='d':
                 #  check left and right tiles
                 #  get position of left-most conjoining square for each square in placed word
                 starting_square = square
-                while not self.board.get_adjacent_square(starting_square).left.is_empty():
-                    starting_square = self.board.get_adjacent_square(starting_square).left
-                secondary_word_placement = word_placement(self.board, starting_square, self.word_placement, self.direction)
+                while not self.board.get_adjacent_square(starting_square, "left").is_empty():
+                    starting_square = self.board.get_adjacent_square(starting_square, "left")
+                secondary_word_placement = word_placement(self.board, starting_square, square, tile, self.direction)
                 all_secondary_word_placements.append(secondary_word_placement)
-        #  secondary words must be atleast 2 tiles long
+        #  secondary words must be at least 2 tiles long
         all_secondary_word_placements = [word for word in all_secondary_word_placements
-                                         if len([square for square, tile in word]) > 1
-                                         and any([tile for square, tile in word if square.is_empty()])]
+                                         if len(word) > 1
+                                         and any(tile for square, tile in word if square.is_empty())]
 
         return all_secondary_word_placements
 
@@ -148,7 +157,7 @@ class Word:
                 if square.is_empty():
                     multiplier = square.get_multiplier()
 
-                    if multiplier in ['TWS','DWS']:
+                    if multiplier in ['TWS', 'DWS']:
                         word_multipliers.append(multiplier)
                     elif multiplier == 'TLS':
                         tile_score *= 3
@@ -170,8 +179,7 @@ class Word:
 
         def calculate_secondary(self):
             secondary_score = 0
-            secondary_word_placements = self.get_secondary_word_placements()
-            for word_placement in secondary_word_placements:
+            for word_placement in self.secondary_word_placements:
                 word_score = score_word(word_placement)
                 secondary_score += word_score
             return secondary_score

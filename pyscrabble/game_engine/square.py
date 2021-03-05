@@ -1,17 +1,20 @@
 from collections import namedtuple
 
 
-class Square:
-    Coord = namedtuple('Coord', ['y','x'])
+Coord = namedtuple('Coord', ['y', 'x'])
 
-    def __init__(self,coord):
-        self.tile = None
+
+class Square:
+    BOARD_DIMENSIONS = 15
+
+    def __init__(self, coord, tile=None):
+        self.tile = tile
         self.text = ' '
         self.multiplier = None
-        self.coord = Square.Coord(coord[0],coord[1])
+        self.coord = Coord(coord[0], coord[1])
         self.in_bounds = None
 
-        self.set_bounds()
+        self._set_bounds()
 
     def __repr__(self):
         if self.tile:
@@ -37,8 +40,8 @@ class Square:
             else:
                 return '###'
 
-    def set_bounds(self):
-        if 0 <= self.coord.x <= 14 and 0 <= self.coord.y <= 14:
+    def _set_bounds(self):
+        if 0 <= self.coord.x < Square.BOARD_DIMENSIONS and 0 <= self.coord.y < Square.BOARD_DIMENSIONS:
             self.in_bounds = True
         else:
             self.in_bounds = False
@@ -47,14 +50,14 @@ class Square:
         self.text = text
 
     def set_multiplier(self, multiplier):
-        if multiplier in ['DLS','TLS','DWS','TWS']:
+        if multiplier in ['DLS', 'TLS', 'DWS', 'TWS']:
             self.multiplier = multiplier
 
     def set_tile(self, tile):
         self.tile = tile
 
     def transpose_square(self):
-        self.coord = Square.Coord(self.coord.x, self.coord.y)
+        self.coord = Coord(self.coord.x, self.coord.y)
 
     def get_text(self):
         return self.text
@@ -74,5 +77,10 @@ class Square:
     def is_empty(self):
         if self.tile:
             return False
-        else:
-            return True
+        return True
+
+    def __eq__(self, other):
+        return isinstance(other, Square) and self.coord == other.coord
+
+    def __hash__(self):
+        return id(self)

@@ -11,13 +11,13 @@ class Player:
     def __repr__(self):
         return '<__main__.Player ' + self.name + ' >'
 
-    def get_player_name(self):
+    def get_name(self):
         return self.name
 
-    def increase_player_score(self, score_increment):
+    def increase_score(self, score_increment):
         self.score += score_increment
 
-    def get_player_score(self):
+    def get_score(self):
         return self.score
 
     def get_rack(self):
