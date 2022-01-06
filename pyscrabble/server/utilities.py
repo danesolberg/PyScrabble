@@ -8,15 +8,16 @@ from .application import redis_client
 
 def handle_join_room(room, sid, username):
     redis_client.sadd('room:' + room + ':members', sid)
+    redis_client.sadd('room:' + room + ':active_members', sid)
     redis_client.sadd('user:' + sid + ':rooms', room)
     redis_client.hset('users:usernames', sid + ':' + room, username)
     update_players(room)
 
 
 def handle_leave_room(room, sid):
-    redis_client.srem('room:' + room + ':members', sid)
+    redis_client.srem('room:' + room + ':active_members', sid)
     redis_client.srem('user:' + sid + ':rooms', room)
-    if redis_client.scard('room:' + room + ':members') == 0:
+    if redis_client.scard('room:' + room + ':active_members') == 0:
         redis_client.srem('rooms:global', room)
         redis_client.hdel('rooms:global:open', room)
     update_players(room)
@@ -67,7 +68,7 @@ def update_racks(room):
 
 
 def update_players(room):
-    sids = redis_client.smembers('room:' + room + ':members')
+    sids = redis_client.smembers('room:' + room + ':active_members')
     usernames = []
     for sid in sids:
         sid = sid.decode('utf-8')
@@ -93,3 +94,11 @@ def get_username(room, sid):
 
 def room_is_in_play(room):
     return redis_client.hget('rooms:inplay', room).decode('utf-8') == '1'
+
+
+def user_is_room_member(room, sid):
+    return redis_client.sismember('room:' + room + ':members', sid)
+
+
+def user_is_room_active_member(room, sid):
+    return redis_client.sismember('room:' + room + ':active_members', sid)

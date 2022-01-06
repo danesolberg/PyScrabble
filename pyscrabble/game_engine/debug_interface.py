@@ -24,4 +24,4 @@ class DebugInterface(TtyPrinter):
         self.stdscr.addstr('Played Word: %s \n' % play.get_word_str())
         self.stdscr.addstr('Move score: %s \n' % play.get_score())
         loc, direction = play.get_location(), play.get_direction()
-        self.stdscr.addstr(f'Location: ({loc[0], loc[1]})' + 'right' if direction == 'r' else 'down' + '\n')
+        self.stdscr.addstr(f'Location: ({loc[0]}, {loc[1]}) ' + ('right' if direction == 'r' else 'down') + '\n')
