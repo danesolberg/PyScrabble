@@ -11,7 +11,7 @@ from ...game_engine.game import Game
 
 def gen_room():
     while True:
-        room = uuid.uuid4().hex[:6].upper()
+        room = uuid.uuid4().hex[:4].lower()
         if redis_client.sadd('rooms:global', room) == 1:
             redis_client.hset('rooms:inplay', room, '0')
             return room

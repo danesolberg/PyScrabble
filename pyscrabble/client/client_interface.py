@@ -17,11 +17,10 @@ class ClientInterface(TtyPrinter):
         self.stdscr.addstr(0, 0, 'PyScrabble')
         self.stdscr.addstr(MESSAGE_LINE_BUFFER['offset'] - 1, 0, 'Messages')
 
-    def _safe_close(self, signal, frame):
-        self.render_str(46, 0, 'Exiting game...')
+    def _safe_close(self, signum, frame):
+        self.render_str(55, 0, 'Exiting game...')
         self.erase()
         curses.endwin()
         sio.disconnect()
-        sio.wait()
         curses.endwin()
         sys.exit(0)

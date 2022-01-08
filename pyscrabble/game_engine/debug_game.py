@@ -19,23 +19,23 @@ class DebugGame(Game):
             self.get_player_moves()
         except NoPossibleMovesException:
             while True:
-                self.tty_printer.render_str(48, 0, 'You have no possible moves! Skip turn? (y)')
+                # self.tty_printer.render_str(48, 0, 'You have no possible moves! Skip turn? (y)')
                 self.tty_printer.clear_to_bottom()
-                resp = self.tty_printer.get_key()
+                resp = self.tty_printer.get_input(48, 0, 'You have no possible moves! Skip turn? (y)')
                 if resp == 'y':
                     self.tty_printer.render_line()
                     return self.skip_turn()
         while True:
             try:
                 while True:
-                    self.tty_printer.render_str(48, 0, 'Direction to place word: (d/r): ')
-                    direction = self.tty_printer.get_key()
+                    # self.tty_printer.render_str(48, 0, 'Direction to place word: (d/r): ')
+                    direction = self.tty_printer.get_input(48, 0, 'Direction to place word: (d/r):')
                     if direction in ['d', 'r']:
                         self.tty_printer.render_line()
                         break
                 while True:
-                    self.tty_printer.render_str(48, 0, 'Coordinate to place word (row,column): ')
-                    location = self.tty_printer.get_str()
+                    # self.tty_printer.render_str(48, 0, 'Coordinate to place word (row,column): ')
+                    location = self.tty_printer.get_input(48, 0, 'Coordinate to place word (row,column):')
                     try:
                         location = location.split(',')
                         location = tuple(map(int, [location[0], location[1]]))
@@ -47,8 +47,8 @@ class DebugGame(Game):
                     self.move_generator.find_anchor(placement_square, direction)
                 except PlacementError as e:
                     raise e
-                self.tty_printer.render_str(48, 0, 'Enter word to play: ')
-                word = self.tty_printer.get_str().upper()
+                # self.tty_printer.render_str(48, 0, 'Enter word to play: ')
+                word = self.tty_printer.get_input(48, 0, 'Enter word to play:').upper()
                 try:
                     play = Word(self, word, location, direction)
                     self.place_move(play)
@@ -66,14 +66,14 @@ class DebugGame(Game):
         computer_count = 0
         try:
             while True:
-                self.tty_printer.render_str(0, 0, 'Number of players (max 4): ')
-                num_players = self.tty_printer.get_char() - ord('0')
+                # self.tty_printer.render_str(0, 0, 'Number of players (max 4): ')
+                num_players = ord(self.tty_printer.get_input(0, 0, 'Number of players (max 4):')) - ord('0')
                 if 1 < num_players <= 4:
                     break
             for i in range(num_players):
                 while True:
-                    self.tty_printer.render_str(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
-                    player_is_computer = self.tty_printer.get_key()
+                    # self.tty_printer.render_str(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
+                    player_is_computer = self.tty_printer.get_input(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
                     if player_is_computer in ['y', 'n']:
                         player_is_computer = player_is_computer == 'y'
                         break
@@ -81,10 +81,10 @@ class DebugGame(Game):
                     computer_count += 1
                     player_name = 'Computer ' + str(computer_count)
                 else:
-                    self.tty_printer.render_str(0, 0, 'Name of Player %s: ' % str(i + 1))
-                    player_name = self.tty_printer.get_str()
+                    # self.tty_printer.render_str(0, 0, 'Name of Player %s: ' % str(i + 1))
+                    player_name = ""
                     while player_name == "":
-                        player_name = self.tty_printer.get_str()
+                        player_name = self.tty_printer.get_input(0, 0, 'Name of Player %s: ' % str(i + 1))
                 self.add_player(player_name, player_is_computer)
         except KeyboardInterrupt:
             self.tty_printer._safe_close(None, None)
@@ -140,30 +140,22 @@ class DebugGame(Game):
             self.get_next_player()
             self.process_turn()
 
-            while self.current_player.is_computer() or self.all_computer:
-                self.tty_printer.render_str(48, 0, '\nPress (n) for next turn or (q) for quit.')
-                self.tty_printer.clear_to_bottom()
-                c = self.tty_printer.get_key()
-                if c == 'n':
-                    break
-                elif c == 'q':
-                    self.tty_printer._safe_close(None, None)
+            if self.current_player.is_computer() or self.all_computer:
+                while True:
+                    c = self.tty_printer.get_input(48, 0, '\Enter (n) for next turn or (q) for quit.')
+                    self.tty_printer.clear_to_bottom()
+                    if c == 'n':
+                        break
+                    elif c == 'q':
+                        self.tty_printer._safe_close(None, None)
 
             if self.skips < self.number_players:
                 self.tty_printer.erase()
 
         if self.end_state is self.OUT_OF_TILES_ENDING:
-            zero_tile_player = None
-            other_players = []
-            for player in self.players:
-                if len(player.rack) == 0:
-                    zero_tile_player = player
-                else:
-                    other_players.append(player)
-            for player in other_players:
-                for tile in player.rack:
-                    player.score -= tile.score
-                    zero_tile_player.score += tile.score
+            self.process_out_of_tiles_ending()
+        elif self.end_state is self.OUT_OF_MOVES_ENDING:
+            self.process_out_of_moves_ending()
 
         self.tty_printer.render_header()
         self.tty_printer.clear_to_bottom()
@@ -171,3 +163,4 @@ class DebugGame(Game):
         self.tty_printer.render_str(20, 0, f"Game has finished! <{winner.get_name()}> is the winner. Exiting...")
         time.sleep(3)
         self.tty_printer._safe_close(None, None)
+            
