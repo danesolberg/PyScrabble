@@ -14,8 +14,8 @@ def blink(blink_bool):
 
 
 class TtyPrinter():
-    MIN_HEIGHT = 60
-    MIN_WIDTH = 90
+    MIN_HEIGHT = 55
+    MIN_WIDTH = 70
 
     def __init__(self, stdscr=None):
         if stdscr is not None:
@@ -157,8 +157,7 @@ class TtyPrinter():
         self.stdscr.move(y, x)
         self.refresh()
 
-    def _safe_close(self, signal, frame):
-        self.render_str(46, 0, 'Exiting game...')
+    def _safe_close(self, signum, frame):
         self.erase()
         curses.endwin()
         print('GAME END')

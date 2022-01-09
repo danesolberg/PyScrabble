@@ -18,7 +18,6 @@ class ClientInterface(TtyPrinter):
         self.stdscr.addstr(MESSAGE_LINE_BUFFER['offset'] - 1, 0, 'Messages')
 
     def _safe_close(self, signum, frame):
-        self.render_str(55, 0, 'Exiting game...')
         self.erase()
         curses.endwin()
         sio.disconnect()
