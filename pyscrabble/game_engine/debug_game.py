@@ -62,9 +62,12 @@ class DebugGame(Game):
         computer_count = 0
         try:
             while True:
-                num_players = ord(self.tty_printer.get_input(0, 0, 'Number of players (max 4):')) - ord('0')
-                if 1 < num_players <= 4:
-                    break
+                try:
+                    num_players = int(self.tty_printer.get_input(0, 0, 'Number of players (max 4):'))
+                    if 1 < num_players <= 4:
+                        break
+                except ValueError:
+                    pass
             for i in range(num_players):
                 while True:
                     player_is_computer = self.tty_printer.get_input(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
