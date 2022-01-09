@@ -70,8 +70,8 @@ class MissingRequiredLetterError(WordError):
 class DictionaryError(WordError):
     """Raised when a word is not present in word dictionary."""
 
-    def __init__(self):
-        msg = "Invalid word; word not found in game's dictionary."
+    def __init__(self, word):
+        msg = f"Invalid word; {word} not found in game's dictionary."
         super().__init__(msg)
 
 

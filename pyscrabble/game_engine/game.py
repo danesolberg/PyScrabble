@@ -94,7 +94,7 @@ class Game:
                 raise e
 
             if play.word not in gdg:
-                raise DictionaryError()
+                raise DictionaryError(play.word)
 
             raise MoveError()
 
@@ -142,4 +142,20 @@ class Game:
     def run_game(self):
         raise NotImplemented()
 
+    def process_out_of_tiles_ending(self):
+        zero_tile_player = None
+        other_players = []
+        for player in self.players:
+            if len(player.rack) == 0:
+                zero_tile_player = player
+            else:
+                other_players.append(player)
+        for player in other_players:
+            for tile in player.rack:
+                player.score -= tile.score
+                zero_tile_player.score += tile.score
 
+    def process_out_of_moves_ending(self):
+        for player in self.players:
+            for tile in player.rack:
+                player.score -= tile.score

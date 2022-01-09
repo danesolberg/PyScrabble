@@ -19,11 +19,8 @@ class TestCase(unittest.TestCase):
 
             cls.game.get_current_player().rack.rack = mock_turn.rack[:]
             word = Word(cls.game, mock_turn.primary_word, mock_turn.square, mock_turn.direction)
-            # word = cls.game.gen_computer_word()
             cls.played_words.append(word)
-            # print(cls.game.get_current_player().get_rack())
             cls.game.place_move(word)
-            # print(cls.game.board.visual_repr())
 
     def test_score_accumulation(self):
         if self.game.players[0].name == "player1":
