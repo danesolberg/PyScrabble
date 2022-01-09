@@ -42,5 +42,5 @@ class TestBag(unittest.TestCase):
         assert len(bag) == 0
 
     def test_shuffle(self):
-        # rare chance of this failing due to probabilistic nature
+        # rare chance of this failing due to nature of random shuffling
         assert hash("".join(tile.letter for tile in Bag())) != hash("".join(tile.letter if tile.letter else tile.BLANK_SYMBOL for tile in Bag()))

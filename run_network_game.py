@@ -1,4 +1,5 @@
 import curses
+from pyscrabble.client.utilities import main_thread_alive
 
 from pyscrabble.client.configs import tty_printer, sio
 
