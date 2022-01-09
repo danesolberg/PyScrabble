@@ -19,7 +19,6 @@ class DebugGame(Game):
             self.get_player_moves()
         except NoPossibleMovesException:
             while True:
-                # self.tty_printer.render_str(48, 0, 'You have no possible moves! Skip turn? (y)')
                 self.tty_printer.clear_to_bottom()
                 resp = self.tty_printer.get_input(48, 0, 'You have no possible moves! Skip turn? (y)')
                 if resp == 'y':
@@ -28,13 +27,11 @@ class DebugGame(Game):
         while True:
             try:
                 while True:
-                    # self.tty_printer.render_str(48, 0, 'Direction to place word: (d/r): ')
                     direction = self.tty_printer.get_input(48, 0, 'Direction to place word: (d/r):')
                     if direction in ['d', 'r']:
                         self.tty_printer.render_line()
                         break
                 while True:
-                    # self.tty_printer.render_str(48, 0, 'Coordinate to place word (row,column): ')
                     location = self.tty_printer.get_input(48, 0, 'Coordinate to place word (row,column):')
                     try:
                         location = location.split(',')
@@ -47,7 +44,6 @@ class DebugGame(Game):
                     self.move_generator.find_anchor(placement_square, direction)
                 except PlacementError as e:
                     raise e
-                # self.tty_printer.render_str(48, 0, 'Enter word to play: ')
                 word = self.tty_printer.get_input(48, 0, 'Enter word to play:').upper()
                 try:
                     play = Word(self, word, location, direction)
@@ -66,13 +62,11 @@ class DebugGame(Game):
         computer_count = 0
         try:
             while True:
-                # self.tty_printer.render_str(0, 0, 'Number of players (max 4): ')
                 num_players = ord(self.tty_printer.get_input(0, 0, 'Number of players (max 4):')) - ord('0')
                 if 1 < num_players <= 4:
                     break
             for i in range(num_players):
                 while True:
-                    # self.tty_printer.render_str(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
                     player_is_computer = self.tty_printer.get_input(0, 0, 'Is Player %s a computer? (y/n): ' % str(i + 1))
                     if player_is_computer in ['y', 'n']:
                         player_is_computer = player_is_computer == 'y'
@@ -81,7 +75,6 @@ class DebugGame(Game):
                     computer_count += 1
                     player_name = 'Computer ' + str(computer_count)
                 else:
-                    # self.tty_printer.render_str(0, 0, 'Name of Player %s: ' % str(i + 1))
                     player_name = ""
                     while player_name == "":
                         player_name = self.tty_printer.get_input(0, 0, 'Name of Player %s: ' % str(i + 1))
