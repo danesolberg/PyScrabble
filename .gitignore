@@ -143,4 +143,4 @@ dmypy.json
 
 /.pylintrc
 
-media/src/
+media/
