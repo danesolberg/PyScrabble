@@ -42,7 +42,7 @@ charset-normalizer==2.0.10
 click==8.0.3
 Deprecated==1.2.13
 dnspython==2.1.0
-eventlet==0.33.0
+eventlet==0.31.0
 Flask==2.0.2
 Flask-SocketIO==5.1.1
 GADDAG==1.0.1
