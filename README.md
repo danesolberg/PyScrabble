@@ -63,4 +63,12 @@ PyScrabble uses Redis to manage game state and websocket connections, so a local
 ```
 
 ## Run games
-Launch a local game via `python run_local_game.py` or a networked game via `python run_network_game.py your_name`
+Launch a local game via 
+```sh
+(pyscrabble) ~ python run_local_game.py
+```
+or a networked game via
+```sh
+(pyscrabble) ~ python start_server.py &
+(pyscrabble) ~ python run_network_game.py your_name
+```
