@@ -1,8 +1,10 @@
 from collections import namedtuple
 from .square import Square
+from .word import Word
 from .exceptions import CoordinateError
+from typing import Tuple, List
 
-Adjacent_Squares = namedtuple('Adjacent_Square', ['above', 'below', 'left', 'right'])
+Adjacent_Squares = namedtuple('Adjacent_Squares', ['above', 'below', 'left', 'right'])
 
 
 class Board:
@@ -31,13 +33,13 @@ class Board:
         self.initialize_premium_squares()
         self.last_played_tiles = []
 
-    def get_square(self, coord):
+    def get_square(self, coord: Tuple[int, int]) -> Square:
         try:
             return self.board[coord[0]][coord[1]]
         except IndexError:
             raise CoordinateError(coord)
 
-    def initialize_premium_squares(self):
+    def initialize_premium_squares(self) -> None:
         self.get_square(Board.STARTING_SQUARE).set_text('*')
         self.get_square(Board.STARTING_SQUARE).set_multiplier('DWS')
 
@@ -46,7 +48,7 @@ class Board:
                 self.get_square(coord).set_text(multiplier)
                 self.get_square(coord).set_multiplier(multiplier)
 
-    def place_tiles_on_board(self, word):
+    def place_tiles_on_board(self, word: Word) -> None:
         placement = word.get_word_placement()
         self.reset_last_play_cue()
         for pair in placement:
@@ -57,12 +59,12 @@ class Board:
                 square.set_tile(tile)
                 self.last_played_tiles.append(tile)
 
-    def reset_last_play_cue(self):
+    def reset_last_play_cue(self) -> None:
         while self.last_played_tiles:
             tile = self.last_played_tiles.pop()
             tile.reset_last_played()
 
-    def render_board(self):
+    def render_board(self) -> str:
         board_str = '\r'
 
         def horizontal_index():
@@ -91,19 +93,19 @@ class Board:
         board_str += horizontal_index()
         return board_str
 
-    def visual_repr(self):
+    def visual_repr(self) -> List[List[str]]:
         return [[square.visual_repr() for square in row] for row in self.board]
 
-    def get_board_arr(self):
+    def get_board_arr(self) -> List[Square]:
         return self.board
 
-    def transpose_board(self):
+    def transpose_board(self) -> None:
         self.board = list(zip(*self.board))
         for row in self.board:
             for square in row:
                 square.transpose_square()
 
-    def get_adjacent_square(self, square, direction):
+    def get_adjacent_square(self, square: Square, direction: str) -> Square:
         delta = self.ADJACENT_DIRECTIONS[direction]
 
         new_coord = (square.get_coord().y + delta[0], square.get_coord().x + delta[1])
@@ -114,7 +116,7 @@ class Board:
 
         return new_square
 
-    def get_adjacent_squares(self, square):
+    def get_adjacent_squares(self, square: Square) -> Adjacent_Squares:
         up_square = self.get_adjacent_square(square, "above")
         down_square = self.get_adjacent_square(square, "below")
         left_square = self.get_adjacent_square(square, "left")

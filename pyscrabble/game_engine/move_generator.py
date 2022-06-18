@@ -2,9 +2,12 @@ from collections import namedtuple
 from copy import copy
 from gaddag.gaddag import Node
 from gaddag.cgaddag import cgaddag
+from typing import Optional, Set, List
 
 from . import gdg
 from .word import Word
+from .square import Square
+from .tile import Tile
 from .exceptions import AnchorSquareError, StartingSquareError
 
 
@@ -23,7 +26,7 @@ class MoveGenerator:
         self.set_cross_sets()
         self.last_turn_generated = game.get_turn()
 
-    def prefix_path(self, square, is_first=True):
+    def prefix_path(self, square: Square, is_first: Optional[bool]=True) -> str:
         if is_first and not self.board.get_adjacent_square(square, "below").get_tile():
             raise ValueError('Cannot build prefix for this square.')
         if self.board.get_adjacent_square(square, "below").get_tile():
@@ -37,7 +40,7 @@ class MoveGenerator:
             return letter
         return path.lower()
 
-    def suffix_path(self, square, is_first=True):
+    def suffix_path(self, square: Square, is_first: Optional[bool]=True) -> str:
         if is_first and not self.board.get_adjacent_square(square, "above").get_tile():
             raise ValueError('Cannot build suffix for this square.')
         if self.board.get_adjacent_square(square, "above").get_tile():
@@ -53,7 +56,7 @@ class MoveGenerator:
             path = path + '+'
         return path.lower()
 
-    def is_anchor_square(self, square):
+    def is_anchor_square(self, square: Square) -> bool:
         adjacent_squares = self.board.get_adjacent_squares(square)
         if square.is_empty() and (not adjacent_squares.above.is_empty() or not adjacent_squares.below.is_empty() or \
                                   not adjacent_squares.left.is_empty() or not adjacent_squares.right.is_empty()):
@@ -63,7 +66,7 @@ class MoveGenerator:
         else:
             return False
 
-    def find_anchor(self, placement_square, direction):
+    def find_anchor(self, placement_square: Square, direction: str) -> Square:
         current_square = placement_square
         if self.is_anchor_square(current_square):
             return current_square
@@ -84,7 +87,7 @@ class MoveGenerator:
         else:
             raise StartingSquareError()
 
-    def get_adjacent_arc(self, square, direction=None, is_first=True):
+    def get_adjacent_arc(self, square: Square, direction: Optional[str]=None, is_first: Optional[bool]=True):
         left_arc = right_arc = up_arc = down_arc = ''
 
         # up arc (anchor square above tile)
@@ -133,17 +136,17 @@ class MoveGenerator:
 
         return Arc(up_arc, down_arc, left_arc, right_arc,)
 
-    def letter_set_exterior(self, path):
+    def letter_set_exterior(self, path: str) -> Set[str]:
         node = gdg.root
         try:
             node = node.follow(path)
         except Exception:
-            return ''
+            return set()
         letter_set = set(map(str.upper, node.letter_set))
         return letter_set
 
-    def letter_set_interior(self, square):
-        def check_letter(square, arc, letter):
+    def letter_set_interior(self, square: Square) -> Set[str]:
+        def check_letter(square: Square, arc: Node, letter: str):
             try:
                 new_arc = arc[letter]
             except Exception:
@@ -165,7 +168,7 @@ class MoveGenerator:
         try:
             suf_edge = gdg.root.follow(suf_path).edges
         except Exception:
-            return ''
+            return set()
         for cross in suf_edge:
             arc = gdg.root.follow(suf_path)
             if check_letter(square, arc, cross) is True:
@@ -174,7 +177,7 @@ class MoveGenerator:
         cross_set_interior = set(map(str.upper, cross_set_interior))
         return cross_set_interior
 
-    def get_anchor_squares(self):
+    def get_anchor_squares(self) -> List[Square]:
         anchor_squares = []
         if self.game.get_turn() == 1:
             anchor_squares.append(self.board.get_square((7,7)))
@@ -187,7 +190,7 @@ class MoveGenerator:
         return anchor_squares
 
     # always horizontal. transpose board and run again before vertical moves
-    def cross_set(self, square):
+    def cross_set(self, square: Square) -> Set[str]:
         cross_set = ''
         adjacent_squares = self.board.get_adjacent_squares(square)
 
@@ -205,7 +208,7 @@ class MoveGenerator:
             cross_set = letter_set
         return cross_set
 
-    def set_cross_sets(self):
+    def set_cross_sets(self) -> Set[str]:
         for row in self.board.get_board_arr():
             for square in row:
                 coord = square.get_coord()
@@ -214,7 +217,7 @@ class MoveGenerator:
                 else:
                     self.cross_sets[coord.y][coord.x] = set()
 
-    def record_move(self, word, square, direction):
+    def record_move(self, word: Word, square: Square, direction: str) -> None:
         if direction == 'd':
             coord = square.get_coord()
             square = self.board.get_square((coord.y, coord.x))
@@ -225,16 +228,16 @@ class MoveGenerator:
         except Exception as e:
             raise e
 
-    def clear_moves(self):
+    def clear_moves(self) -> list:
         self.moves = []
         return self.moves
 
-    def get_moves(self):
+    def get_moves(self) -> Set[Word]:
         return set(self.moves)
 
     # gen() and go_on() functions lifted from Steven A. Gordon's "A Faster Scrabble Move Generation Algorithm" (1994)
     # https://ericsink.com/downloads/faster-scrabble-gordon.pdf
-    def gen(self, anchor, rack_arr, direction, arc=None, pos=0, word='', place_pos=0):
+    def gen(self, anchor: Square, rack_arr: List[Tile], direction: str, arc: Optional[Node]=None, pos: Optional[int]=0, word: Optional[str]='', place_pos: Optional[int]=0):
         if arc is None:
             arc = gdg.root
         anchor_coord = anchor.get_coord()
@@ -279,7 +282,7 @@ class MoveGenerator:
                         new_rack.remove(tile)
                         self.go_on(anchor, pos, letter, word, new_rack, new_arc, arc, place_pos, direction)
 
-    def go_on(self, anchor, pos, letter, word, rack, new_arc, old_arc, place_pos, direction):
+    def go_on(self, anchor: Square, pos: int, letter: str, word: Word, rack: List[Tile], new_arc: Node, old_arc: Node, place_pos: int, direction: str):
         anchor_coord = anchor.get_coord()
         square = self.board.get_square((anchor_coord.y, anchor_coord.x + pos))
         if pos <= 0:  # moving left, creating prefix
