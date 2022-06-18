@@ -31,30 +31,51 @@ https://user-images.githubusercontent.com/25882507/148694573-8bdf2428-f0bd-4be2-
     - If the player's rack is missing required tiles to play a word
 3. Moves are scored according to tile values and board multiplier squares
 
-## Installation
+## Run with Docker
+Run the Docker application, which contains a Redis container and game server container, which are started automatically.
+```sh
+~ docker-compose up
+[+] Running 2/0
+ ⠿ Container pyscrabble-redis-1  Created    0.0s
+ ⠿ Container pyscrabble-wss-1    Created    0.0s
+Attaching to pyscrabble-redis-1, pyscrabble-wss-1
+```
+
+Launch the network game inside the game server.
+```sh
+~ docker exec -it pyscrabble-wss-1 python run_network_game.py your_name
+```
+
+## Development Setup
 Use Python 3.7 or 3.8
 
-Create a Python virtual environment, using `venv` or any alternative
+Create a Python virtual environment, using `venv` or any alternative.
 ```sh
 ~ python -m venv pyscrabble
 ~ cd pyscrabble
 ~ source bin/activate
 ```
 
-Next clone this repo and install the dependencies
+Next clone this repo and install the dependencies.
 ```sh
 (pyscrabble) ~ git clone https://github.com/danesolberg/PyScrabble.git
 (pyscrabble) ~ cd PyScrabble
 (pyscrabble) ~ pip install -r requirements.txt
 ```
 
-## Development Setup
-PyScrabble uses Redis to manage game state and websocket connections, so a local Redis server must be started
-
-### Install Redis with Homebrew
+Install Redis (if required)
 ```sh
 ~ brew install redis
 ~ brew services start redis
+```
+
+Start the game server
+```sh
+(pyscrabble) ~ python start_server.py
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 734-552-454
+(pid) wsgi starting up on http://0.0.0.0:5000
 ```
 
 ### Run unit tests
@@ -63,12 +84,39 @@ PyScrabble uses Redis to manage game state and websocket connections, so a local
 ```
 
 ## Run games
-Launch a local game via 
+### Start local game
+####
+In development environment
 ```sh
 (pyscrabble) ~ python run_local_game.py
 ```
-or a networked game via
+####
+In Docker container
 ```sh
-(pyscrabble) ~ python start_server.py &
+~ docker exec -it pyscrabble-wss-1 python run_local_game.py
+```
+
+### Network game
+To launch a network game (currently defaulting to localhost), first create a new game room.
+```sh
 (pyscrabble) ~ python run_network_game.py your_name
 ```
+or
+```sh
+~ docker exec -it pyscrabble-wss-1 python run_network_game.py your_name
+```
+
+This will open a new game room and present a room code to share with up to three other players.
+
+![Game room code](https://user-images.githubusercontent.com/25882507/174459547-0aa6c003-4dd5-4df3-9763-e61d30f86424.png)
+
+Players can join this game by appending the room code as an argument to `run_network_game.py`.
+```sh
+(pyscrabble) ~ python run_network_game.py my_name 4b82
+```
+or
+```sh
+~ docker exec -it python run_network_game.py my_name 4b82
+```
+
+
