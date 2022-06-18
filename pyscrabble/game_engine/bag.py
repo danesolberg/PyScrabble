@@ -37,16 +37,16 @@ class Bag:
         self.bag = []
         self._initialize_bag()
 
-    def _initialize_bag(self):
+    def _initialize_bag(self) -> None:
         for letter, cnt in self.BAG_TILE_COUNTS.items():
             for _ in range(cnt):
                 self.add_tile_to_bag(Tile(letter))
         shuffle(self.bag)
 
-    def add_tile_to_bag(self, tile):
+    def add_tile_to_bag(self, tile: Tile) -> None:
         self.bag.append(tile)
 
-    def take_tile_from_bag(self):
+    def take_tile_from_bag(self) -> Tile:
         return self.bag.pop()
 
     def __len__(self):

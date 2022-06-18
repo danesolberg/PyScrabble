@@ -1,5 +1,6 @@
 from collections import namedtuple, deque
 from operator import itemgetter
+from typing import List, Optional, Set, Union
 
 from . import gdg
 from .board import Board
@@ -7,12 +8,13 @@ from .bag import Bag
 from .move_generator import MoveGenerator
 from .player import Player
 from .word import Word
+from .square import Square
 from .exceptions import (NoPossibleMovesException, TurnSkippedException,
                          MissingRequiredLetterError, DictionaryError, MoveError, PlacementError,
                          NonUniquePlayerNameException)
 
 
-Player_Moves = namedtuple('Player_Moves', ['move_set', 'best_move'])
+PlayerMoves = namedtuple('PlayerMoves', ['move_set', 'best_move'])
 
 
 class Game:
@@ -30,22 +32,22 @@ class Game:
         self.end_state = None
         self.move_generator = MoveGenerator(self)
 
-    def add_player(self, name, is_computer):
+    def add_player(self, name: str, is_computer: bool) -> None:
         self.number_players += 1
         if any(player for player in self.players if player.get_name() == name):
             raise NonUniquePlayerNameException()
         self.players.append(Player(name, is_computer, self.bag))
 
-    def get_bag(self):
+    def get_bag(self) -> Bag:
         return self.bag
 
-    def get_board(self):
+    def get_board(self) -> Board:
         return self.board
 
-    def get_current_player(self):
+    def get_current_player(self) -> Player:
         return self.current_player
 
-    def get_next_player(self):
+    def get_next_player(self) -> Union[Player, None]:
         if len(self.players) == 0:
             return None
 
@@ -53,27 +55,27 @@ class Game:
         self.players.append(self.current_player)
         return self.current_player
 
-    def get_player(self, name):
+    def get_player(self, name: str) -> Player:
         return next(player for player in self.players if player.get_name() == name)
 
-    def get_all_players(self):
+    def get_all_players(self) -> List[Player]:
         return self.players
 
-    def skip_turn(self):
+    def skip_turn(self) -> None:
         self.skips += 1
         self.board.reset_last_play_cue()
         raise TurnSkippedException
 
-    def get_player_moves(self, specific_square=None):
+    def get_player_moves(self, specific_square: Optional[Square]=None) -> PlayerMoves:
         move_set = self.move_generator.generate_moves(self.current_player.get_rack().get_rack_arr(), specific_square)
 
         if len(move_set) > 0:
             best_move = max(move_set, key=itemgetter(3))
-            return Player_Moves(move_set, best_move)
+            return PlayerMoves(move_set, best_move)
         else:
             raise NoPossibleMovesException
 
-    def place_move(self, play):
+    def place_move(self, play: Word) -> None:
         player_moves = self.get_player_moves(self.move_generator.find_anchor(play.squares[0], play.direction))
         moves_gen = ((w, p, sq) for w, p, sq, sc in player_moves.move_set)
         if (play.get_word_str(), play.get_squares()[0], play.get_direction()) in moves_gen:
@@ -98,7 +100,7 @@ class Game:
 
             raise MoveError()
 
-    def gen_computer_word(self):
+    def gen_computer_word(self) -> Union[Word, None]:
         try:
             player_moves = self.get_player_moves()
         except NoPossibleMovesException:
@@ -115,10 +117,10 @@ class Game:
         play = Word(self, word, location, direction)
         return play
 
-    def get_turn(self):
+    def get_turn(self) -> int:
         return self.turn
 
-    def is_end_state(self):
+    def is_end_state(self) -> bool:
         if self.skips > self.number_players:
             self.end_state = self.OUT_OF_MOVES_ENDING
             return True
@@ -127,22 +129,22 @@ class Game:
             return True
         return False
 
-    def setup_game(self):
+    def setup_game(self) -> None:
         raise NotImplemented()
 
-    def query_player_word(self):
+    def query_player_word(self) -> None:
         raise NotImplemented()
 
-    def process_turn(self):
+    def process_turn(self) -> None:
         raise NotImplemented()
 
-    def play_game(self):
+    def play_game(self) -> None:
         self.run_game()
 
-    def run_game(self):
+    def run_game(self) -> None:
         raise NotImplemented()
 
-    def process_out_of_tiles_ending(self):
+    def process_out_of_tiles_ending(self) -> None:
         zero_tile_player = None
         other_players = []
         for player in self.players:
@@ -150,12 +152,16 @@ class Game:
                 zero_tile_player = player
             else:
                 other_players.append(player)
+                
+        if not zero_tile_player:
+            raise Exception("Incorrect ending: all players have remaining tiles.")
+
         for player in other_players:
             for tile in player.rack:
                 player.score -= tile.score
                 zero_tile_player.score += tile.score
 
-    def process_out_of_moves_ending(self):
+    def process_out_of_moves_ending(self) -> None:
         for player in self.players:
             for tile in player.rack:
                 player.score -= tile.score
