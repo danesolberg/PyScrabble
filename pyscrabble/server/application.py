@@ -2,13 +2,17 @@ import eventlet
 
 eventlet.monkey_patch()
 
+import os
 import redis
 from flask import Flask
 from flask_socketio import SocketIO
 
-socketio = SocketIO()
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+REDIS_URL = f"redis://{REDIS_HOST}"
+
+socketio = SocketIO()
+redis_client = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
 def create_app(debug=False):
     app = Flask(__name__)
@@ -22,7 +26,7 @@ def create_app(debug=False):
 
     socketio.init_app(app,
                       async_mode='eventlet',
-                      message_queue='redis://127.0.0.1:6379',
+                      message_queue=REDIS_URL,
                       logger=False,
                       engineio_logger=False
                       )
