@@ -18,9 +18,9 @@ https://user-images.githubusercontent.com/25882507/148694573-8bdf2428-f0bd-4be2-
 
 ## How to Play
 ### Create a lobby
-1. Create a new game lobby by running `python run_network_game.py your_name`
+1. Create a new game lobby by running `python run_network_game.py <your_name>`
 2. Share the 4 digit room ID with other players (who have network access to your host machine)
-3. Join an existing game lobby by running `python run_network_game.py your_name room_id`
+3. Join an existing game lobby by running `python run_network_game.py <your_name> room_id`
 4. Start the game, closing the lobby, once all players have joined
 
 ### Enter moves
@@ -43,7 +43,7 @@ Attaching to pyscrabble-redis-1, pyscrabble-wss-1
 
 Launch the network game inside the game server.
 ```sh
-~ docker exec -it pyscrabble-wss-1 python run_network_game.py your_name
+~ docker exec -it pyscrabble-wss-1 python run_network_game.py <your_name>
 ```
 
 ## Development Setup
@@ -99,11 +99,11 @@ In Docker container
 ### Network game
 To launch a network game (currently defaulting to localhost), first create a new game room.
 ```sh
-(pyscrabble) ~ python run_network_game.py your_name
+(pyscrabble) ~ python run_network_game.py <your_name>
 ```
 or
 ```sh
-~ docker exec -it pyscrabble-wss-1 python run_network_game.py your_name
+~ docker exec -it pyscrabble-wss-1 python run_network_game.py <your_name>
 ```
 
 This will open a new game room and present a room code to share with up to three other players.
