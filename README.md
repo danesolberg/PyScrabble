@@ -99,24 +99,24 @@ In Docker container
 ### Network game
 To launch a network game (currently defaulting to localhost), first create a new game room.
 ```sh
-(pyscrabble) ~ python run_network_game.py your_name
+(pyscrabble) ~ python run_network_game.py <your_name>
 ```
 or
 ```sh
-~ docker exec -it pyscrabble-wss-1 python run_network_game.py your_name
+~ docker exec -it pyscrabble-wss-1 python run_network_game.py <your_name>
 ```
 
 This will open a new game room and present a room code to share with up to three other players.
 
 ![Game room code](https://user-images.githubusercontent.com/25882507/174459547-0aa6c003-4dd5-4df3-9763-e61d30f86424.png)
 
-Players can join this game by appending the room code as an argument to `run_network_game.py`.
+Players can join this game by appending the room code as an argument to `run_network_game.py`.  In the image above, the room code is 4b82.
 ```sh
-(pyscrabble) ~ python run_network_game.py my_name 4b82
+(pyscrabble) ~ python run_network_game.py <your_name> <room_code>
 ```
 or
 ```sh
-~ docker exec -it python run_network_game.py my_name 4b82
+~ docker exec -it python run_network_game.py <your_name> <room_code>
 ```
 
 
