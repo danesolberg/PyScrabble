@@ -1,12 +1,11 @@
 import curses
-from pyscrabble.client.utilities import main_thread_alive
 
-from pyscrabble.client.configs import tty_printer, sio
+from pyscrabble.client.configs import tty_printer, sio, user_config
 
 
 def run(stdscr):
     tty_printer.init_scr(stdscr)
-    sio.connect('http://localhost:5000')
+    sio.connect(user_config.address)
     sio.wait()
 
 

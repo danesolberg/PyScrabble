@@ -31,4 +31,4 @@ def submit_move():
         word = tty_printer.get_input(COMMAND_LINE_ROW, 0, WORD_TEXT).upper()
         break
 
-    sio.emit('submit move', {'location': location, 'direction': direction, 'word': word, 'room': user_config['room']})
+    sio.emit('submit move', {'location': location, 'direction': direction, 'word': word, 'room': user_config.room})

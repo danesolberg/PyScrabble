@@ -17,4 +17,4 @@ def confirm_start():
         else:
             continue
     tty_printer.clear_line(COMMAND_LINE_ROW)
-    sio.emit('start', {'room': user_config['room']})
+    sio.emit('start', {'room': user_config.room})
