@@ -120,6 +120,6 @@ or
 ```
 
 #### Host Address
-By default the user running the PyScrabble game server, who is hosting the game, will run the server on localhost, which by default is only accessible to other processes on the same host machine.  The user can expose their local PyScrabble websocket-based game server located at `http://0.0.0.0:5000` to the internet using easy tools like [ngrok](ngrok.com) or by establishing port forwarding / NAT on your router.
+By default the user running the PyScrabble game server, who is hosting the game, will run the server on localhost, which by default is only accessible to other processes on the same host machine.  The user can expose their local PyScrabble websocket-based game server located at `http://0.0.0.0:5000` to the internet using easy tools like [ngrok](https://www.ngrok.com) or by establishing port forwarding / NAT on your router.
 
 
